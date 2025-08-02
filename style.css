@@ -5,3 +5,12 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 2rem;
 }
+
+.skill-item {
+    position: absolute;
+    transition: transform 0.2s ease-in-out;
+}
+
+.skill-item:hover {
+    transform: scale(1.1);
+}
