@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Prep App</title>
+  <!-- Tailwind CSS CDN for styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Custom styles for the app, including the scrollbar -->
+  <style>
+    /* Inter font for a modern look */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Custom scrollbar for better aesthetics on dark background */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-black text-white font-sans flex flex-col items-center p-4">
+
+  <div class="w-full max-w-5xl h-[calc(100vh-2rem)] flex flex-col">
+    <div id="app" class="flex-grow p-6 sm:p-8 bg-white/5 backdrop-blur-md rounded-xl shadow-xl">
+      <!-- App content will be dynamically rendered here by JavaScript -->
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const appElement = document.getElementById('app');
+
+      // State to manage the app's current view
+      let currentPage = 'home';
+      let selectedTopic = null;
+      let expandedQuestion = null;
+
+      // Data structure for the HR questions and answers, based on the resume
+      const hrQuestions = [
+        { id: 'hr1', question: 'Tell me about yourself.', answer: 'I am a motivated Computer Science student with hands-on experience in full-stack web development, specifically using React and MongoDB. My passion lies in creating innovative solutions, which I\'ve demonstrated through projects like a funded intelligent charger. I am eager to apply my skills and grow as a software developer.' },
+        { id: 'hr2', question: 'Why do you want to work for our company?', answer: 'I am eager to contribute to an innovative team and further develop my expertise in software development. My experience aligns well with the kind of work your company does, and I am excited by the opportunity to apply my skills and learn from experienced professionals here.' },
+        { id: 'hr3', question: 'What are your greatest strengths?', answer: 'One of my greatest strengths is my ability to quickly gain hands-on experience with new technologies. My resume highlights my experience with Azure AI services and my current training for ServiceNow certifications, which were a result of proactive learning. I am also a good team player, as shown by my role in the IIT Bombay-funded "Magno Charge" project.' },
+        { id: 'hr4', question: 'Describe a time you faced a challenge in a project and how you overcame it.', answer: 'During the "Magno Charge" project, a significant challenge was integrating the Bluetooth module with the mobile application to ensure reliable and consistent communication. To overcome this, my team and I dedicated extra time to research different communication protocols and hardware limitations. We systematically tested various configurations and collaborated with our mentors to fine-tune the connection, which ultimately led to a functional and stable prototype.' },
+        { id: 'hr5', question: 'What are your career goals?', answer: 'My short-term goal is to secure a challenging software development role where I can apply my skills in full-stack development and cloud platforms. Long-term, I aspire to become a proficient full-stack developer and a certified expert in the ServiceNow ecosystem, contributing to large-scale projects and mentoring others.' },
+        { id: 'hr6', question: 'What are your weaknesses?', answer: 'I sometimes get too focused on the details of a project, which can make me lose track of the bigger picture. To counter this, I\'ve started using project management tools to better organize my tasks and visualize the overall progress, ensuring I meet deadlines and stay aligned with the project\'s main goals.' },
+        { id: 'hr7', question: 'How do you handle pressure?', answer: 'I believe pressure can be a great motivator. I handle it by prioritizing my tasks, breaking down complex problems into smaller, manageable steps, and communicating proactively with my team to manage expectations. This approach helps me stay calm and deliver quality work even under tight deadlines.' },
+        { id: 'hr8', question: 'What motivates you?', answer: 'I am motivated by a combination of challenging projects and the opportunity for continuous learning. I enjoy solving complex problems and am always seeking to expand my technical skill set. Working on projects that have a tangible impact, like the Magno Charge project, is also a great source of motivation for me.' },
+        { id: 'hr9', question: 'Why are you the best candidate for this job?', answer: 'My unique blend of hands-on experience in full-stack development, cloud technologies like Azure AI, and my proactive pursuit of professional certifications like ServiceNow CSA and CAD make me a strong candidate. I am a quick learner with a collaborative mindset, eager to contribute my skills and passion for technology to your team and projects.' },
+        { id: 'hr10', question: 'Where do you see yourself in five years?', answer: 'In five years, I see myself as a senior developer or a team lead, having mastered full-stack technologies and the ServiceNow platform. I hope to be a key contributor to innovative projects, mentoring junior developers, and continuing to learn and adapt to new technologies.' },
+        { id: 'hr11', question: 'How do you stay updated with industry trends?', answer: 'I regularly follow tech blogs, subscribe to industry newsletters, and participate in online courses and workshops, like the ones I\'ve attended on Integrative AI in Web & App Development. I also stay active on platforms like GitHub to see what new technologies and projects are emerging.' },
+        { id: 'hr12', question: 'How do you handle conflict in a team?', answer: 'I believe open and respectful communication is key. I would first try to understand the other person\'s perspective by listening carefully. Then, I would propose a solution-oriented discussion to find common ground and resolve the issue constructively, always keeping the project\'s success as the primary goal.' },
+        { id: 'hr13', question: 'Tell me about your most successful project.', answer: 'My most successful project has been "Magno Charge," an intelligent auto disconnect charger. My team and I secured ₹4.8 Lakhs in funding from IIT Bombay\'s TIH-IoT Foundation. We developed a Bluetooth-enabled prototype to address the problem of battery overcharging. The success wasn\'t just in the funding, but in the collaborative problem-solving and tangible results we achieved as a team.' },
+        { id: 'hr14', question: 'What is your GPA and what does it say about you?', answer: 'My GPA is 7.9/10, which corresponds to 75%. I believe it reflects a strong foundation in my academic studies. However, I believe my resume shows that I am not just focused on academics, but also on practical, hands-on experience through projects and internships, which is what truly prepares me for a professional role.' },
+        { id: 'hr15', question: 'How do you define success?', answer: 'To me, success is a combination of achieving professional goals and having a positive impact on a team or a project. For instance, successfully developing the Magno Charge prototype was a success because it solved a real-world problem and was the result of effective teamwork and collaboration.' },
+        { id: 'hr16', question: 'What are your hobbies?', answer: 'I enjoy staying updated with the latest technological developments and participating in coding hackathons, like the Shastra 1.0 Coding Hackathon where I was a finalist. I also have a keen interest in learning new programming languages and frameworks in my free time.' },
+        { id: 'hr17', question: 'What is your greatest failure?', answer: 'During a hackathon, my team and I decided to take on a very ambitious project with a new technology that none of us had much experience with. We were so focused on the novelty that we failed to build a solid foundation, and the project ultimately didn\'t work. I learned the importance of balancing ambition with a realistic assessment of my team\'s skills and the project timeline.' },
+        { id: 'hr18', question: 'What kind of work environment do you prefer?', answer: 'I thrive in a dynamic, collaborative environment where I can both contribute my skills and learn from experienced colleagues. I appreciate a culture that encourages innovation and continuous learning, much like the one I experienced during my internships.' },
+        { id: 'hr19', question: 'What is your leadership style?', answer: 'While I am still early in my career, I believe in leading by example. I am a strong believer in transparent communication and giving everyone a voice in decision-making. My role in the Magno Charge project involved contributing to the team\'s success through collaborative problem-solving, which I believe is a key aspect of effective leadership.' },
+        { id: 'hr20', question: 'How do you handle a tight deadline?', answer: 'When faced with a tight deadline, I first break down the project into smaller tasks and prioritize them. I then work to complete the most critical tasks first. If needed, I would communicate with my team or manager to manage expectations and ensure that everyone is aligned on the priorities to meet the deadline.' },
+        { id: 'hr21', question: 'Tell me more about the "Magno Charge" project and its impact.', answer: 'The "Magno Charge" project was a Bluetooth smart charger prototype I developed with a team. It was funded with ₹4.8 Lakhs from IIT Bombay\'s TIH-IoT Foundation. The main goal was to address battery overcharging. The prototype was designed to theoretically reduce overcharge risk by ~85% and extend battery lifespan by 12-24%.'},
+      ];
+
+      // Data structure for Technical Round questions and answers, separated by domain
+      const trCategories = [
+        {
+          title: 'C',
+          id: 'c',
+          questions: [
+            { id: 'c1', question: 'What are pointers?', answer: 'A pointer is a variable that stores the memory address of another variable. They are used to access memory directly, enabling dynamic memory allocation and efficient data manipulation.' },
+            { id: 'c2', question: 'What is the purpose of the `volatile` keyword?', answer: 'The `volatile` keyword is a type qualifier that prevents the compiler from applying certain optimizations to a variable, ensuring that the variable\'s value is always read from memory, rather than from a register. This is important for variables that can be changed by external factors.' },
+          ]
+        },
+        {
+          title: 'C++',
+          id: 'cpp',
+          questions: [
+            { id: 'cpp1', question: 'Explain the concept of inheritance in C++.', answer: 'Inheritance is a fundamental concept in object-oriented programming where a new class (derived class) is created from an existing class (base class). The derived class inherits the properties and behaviors of the base class, promoting code reusability and establishing an "is-a" relationship between classes.' },
+            { id: 'cpp2', question: 'What is a virtual function in C++?', answer: 'A virtual function is a member function of a class that is declared with the `virtual` keyword. It allows for dynamic polymorphism, where a function call is resolved at runtime rather than compile time. This is essential for implementing method overriding in derived classes.' },
+          ]
+        },
+        {
+          title: 'Python',
+          id: 'python',
+          questions: [
+            { id: 'py1', question: 'What is the Global Interpreter Lock (GIL) in Python?', answer: 'The GIL is a mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes at the same time. This means that even on a multi-core processor, only one thread can be executing Python bytecode at any given time, limiting true parallelism for CPU-bound tasks.' },
+            { id: 'py2', question: 'What is the difference between `list` and `tuple` in Python?', answer: 'A `list` is a mutable sequence of objects, meaning its elements can be changed, added, or removed after creation. A `tuple` is an immutable sequence of objects, so its elements cannot be changed after it is created. Tuples are generally more memory-efficient and faster to process.' },
+            { id: 'py3', question: 'Can you tell me about the Python-based ML Sentiment Analyzer prototype you developed?', answer: 'As part of my virtual internship at SkillDzire, I developed a Python-based ML Sentiment Analyzer prototype. The goal was to streamline product review analysis to provide quicker customer insights. This project helped me accelerate my foundational understanding of Machine Learning concepts.' },
+          ]
+        },
+        {
+          title: 'Java',
+          id: 'java',
+          questions: [
+            { id: 'jv1', question: 'Explain the concept of OOP in Java.', answer: 'Java is an object-oriented programming language, based on four core principles: Encapsulation (bundling data and methods that operate on that data), Inheritance (creating new classes from existing ones), Polymorphism (allowing objects to take on many forms), and Abstraction (hiding complex implementation details).' },
+            { id: 'jv2', question: 'What is a Java Virtual Machine (JVM)?', answer: 'The JVM is an abstract computing machine that enables a computer to run Java programs. It is a key component of the Java platform\'s "write once, run anywhere" philosophy. The Java bytecode is compiled once and then executed on any platform with a JVM.' },
+          ]
+        },
+        {
+          title: 'SQL',
+          id: 'sql',
+          questions: [
+            { id: 'sql1', question: 'What is the difference between a `JOIN` and `UNION`?', answer: 'A `JOIN` is used to combine columns from two or more tables based on a related column, creating a new result set. A `UNION` combines the rows of two or more `SELECT` statements into a single result set.' },
+          ]
+        },
+        {
+          title: 'NoSQL',
+          id: 'nosql',
+          questions: [
+            { id: 'nosql1', question: 'What is the difference between SQL and NoSQL databases?', answer: 'SQL databases are relational and use a structured query language. They are table-based and have a rigid, predefined schema. NoSQL databases are non-relational, schema-less, and are more flexible, offering various data models like document, key-value, and wide-column.' },
+          ]
+        },
+        {
+          title: 'DBMS',
+          id: 'dbms',
+          questions: [
+            { id: 'dbms1', question: 'What is indexing in a database and why is it important?', answer: 'Indexing is a technique used to retrieve data from a database more quickly. It works by creating a data structure (like a B-tree) on one or more columns of a table or collection, allowing the database engine to quickly locate records without scanning the entire data set. This significantly improves query performance.' },
+          ]
+        },
+        {
+          title: 'OOPs',
+          id: 'oops',
+          questions: [
+            { id: 'oops1', question: 'Explain the four pillars of OOP.', answer: 'The four pillars are: Abstraction (hiding implementation details), Encapsulation (bundling data and methods), Inheritance (creating new classes from existing ones), and Polymorphism (allowing objects to take on many forms).' },
+          ]
+        },
+        {
+          title: 'Computer Networks',
+          id: 'cn',
+          questions: [
+            { id: 'cn1', question: 'What is TCP/IP?', answer: 'TCP/IP (Transmission Control Protocol/Internet Protocol) is the fundamental set of communication protocols used to connect network devices on the Internet. It is a two-layer protocol: IP handles addressing and routing data packets, while TCP ensures reliable, ordered, and error-checked delivery of data streams.' },
+          ]
+        },
+        {
+          title: 'Operating Systems',
+          id: 'os',
+          questions: [
+            { id: 'os1', question: 'What is the difference between a process and a thread?', answer: 'A process is an instance of a program that is being executed. It is an independent entity with its own memory space. A thread, on the other hand, is a unit of execution within a process. Threads of the same process share the same memory space, making them "lightweight" and more efficient for concurrent tasks.' },
+          ]
+        },
+        {
+          title: 'Computer Architecture & Organisation',
+          id: 'cao',
+          questions: [
+            { id: 'cao1', question: 'What are the main components of a computer system?', answer: 'The main components of a computer system include the Central Processing Unit (CPU), which executes instructions; Memory (RAM), which stores data for quick access; Storage (SSD/HDD), which provides long-term data storage; and Input/Output (I/O) devices, such as the keyboard, mouse, and monitor.' },
+          ]
+        },
+        {
+          title: 'Design and Analysis of Algorithms',
+          id: 'daa',
+          questions: [
+            { id: 'daa1', question: 'What is Big O notation?', answer: 'Big O notation is a mathematical notation that describes the limiting behavior of a function when the argument tends towards a particular value or infinity. It is used in computer science to classify algorithms according to how their running time or space requirements grow as the input size grows. It provides an upper bound on the complexity of an algorithm.' },
+          ]
+        },
+        {
+          title: 'MongoDB',
+          id: 'mongodb',
+          questions: [
+            { id: 'mongo1', question: 'What is MongoDB and what are its advantages?', answer: 'MongoDB is a popular NoSQL document-based database. It stores data in flexible, JSON-like BSON documents. Its key advantages include a flexible schema, high availability, and scalability for handling large volumes of unstructured data.' },
+            { id: 'mongo2', question: 'How would you use MongoDB in a full-stack web application?', answer: 'I would use MongoDB as the backend database in a MERN stack (MongoDB, Express, React, Node.js) application. It would store data in a flexible, document-based format, which is ideal for handling the diverse data structures often found in modern web apps, like user profiles or blog posts. I would interact with it using a Node.js server and an ODM like Mongoose.'},
+          ]
+        },
+        {
+          title: 'Git',
+          id: 'git',
+          questions: [
+            { id: 'git1', question: 'Explain the difference between `git pull` and `git fetch`.', answer: '`git fetch` downloads commits, files, and refs from a remote repository into your local repository without merging them. `git pull` is a combination of `git fetch` and `git merge`; it downloads the content and immediately merges it into your current branch.' },
+          ]
+        },
+        {
+          title: 'GitHub',
+          id: 'github',
+          questions: [
+            { id: 'github1', question: 'What is GitHub?', answer: 'GitHub is a web-based hosting service for Git repositories, providing a platform for collaborative development and project management. I use GitHub to manage the codebase for all my projects.' },
+          ]
+        },
+        {
+          title: 'React',
+          id: 'react',
+          questions: [
+            { id: 'react1', question: 'What is a component in React?', answer: 'A component is a reusable, self-contained building block of a user interface. It can be a function or a class that returns a React element. For my "Travel Journal Web App," I used components to build the UI for pages, forms, and individual journal entries.' },
+          ]
+        },
+        {
+          title: 'Microsoft Azure',
+          id: 'azure',
+          questions: [
+            { id: 'azure1', question: 'Tell me about your experience with Microsoft Azure.', answer: 'During my Microsoft TechShikSha Internship, I gained practical, hands-on experience with Azure AI services, specifically Azure AI Document Intelligence and Azure AI Language. This gave me a solid understanding of how to use these cloud services to automate data extraction and process natural language.' },
+            { id: 'azure2', question: 'Can you describe your work with Azure AI Document Intelligence and Azure AI Language?', answer: 'I built solutions with Azure AI Document Intelligence to automate data extraction from various documents, improving processing efficiency by 50-70%. With Azure AI Language, I built natural language processing (NLP) solutions that automated 70-90% of text-based insight extraction and enhanced data analysis by 40-60%.' },
+          ]
+        },
+        {
+          title: 'ServiceNow',
+          id: 'servicenow',
+          questions: [
+            { id: 'servicenow1', question: 'What is your background with ServiceNow?', answer: 'I am currently training for my ServiceNow Certified System Administrator (CSA) and Certified Application Developer (CAD) certifications. My goal is to use this knowledge to contribute to digital workflow automation and application development within the ServiceNow platform.' },
+            { id: 'servicenow2', question: 'What is the purpose of the Certified Application Developer (CAD) certification?', answer: 'The Certified Application Developer certification validates my ability to develop and customize applications on the ServiceNow platform. It demonstrates my skills in creating digital workflows and business processes, which is essential for accelerating automation within an organization.' },
+          ]
+        },
+        {
+          title: 'Linux',
+          id: 'linux',
+          questions: [
+            { id: 'linux1', question: 'What is the Linux Kernel?', answer: 'The Linux kernel is the core component of the Linux operating system. It manages hardware devices, memory, and processes, acting as the bridge between the applications and the hardware.' },
+          ]
+        },
+        {
+          title: 'Google Workspace/Cloud',
+          id: 'gcloud',
+          questions: [
+            { id: 'gcloud1', question: 'What is your experience with Google Cloud?', answer: 'My experience with Google Cloud includes completing coursework and lab simulations for the "Introduction to Generative AI" certification. This gave me foundational knowledge for innovative AI solutions, including prompt engineering in Vertex AI.' },
+            { id: 'gcloud2', question: 'Tell me about your "Introduction to Generative AI" coursework.', answer: 'I completed coursework and lab simulations in Generative AI, gaining foundational knowledge for innovative AI solutions. A key part of this was learning prompt engineering in Vertex AI, which allows me to interact with and control large language models for various tasks.'},
+          ]
+        },
+      ];
+
+      // Function to render the home page
+      function renderHomePage() {
+        appElement.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full space-y-8">
+            <h1 class="text-4xl sm:text-5xl font-bold text-center text-white mb-8 drop-shadow-lg">
+              Interview Prep: TR & HR
+            </h1>
+            <button id="hr-button" class="w-full max-w-sm p-6 bg-white/10 backdrop-blur-md rounded-xl shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+              <h2 class="text-2xl font-semibold text-white">HR Interview Questions</h2>
+            </button>
+            <button id="tr-button" class="w-full max-w-sm p-6 bg-white/10 backdrop-blur-md rounded-xl shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105">
+              <h2 class="text-2xl font-semibold text-white">Technical Round Questions</h2>
+            </button>
+          </div>
+        `;
+
+        document.getElementById('hr-button').addEventListener('click', () => {
+          currentPage = 'hr';
+          render();
+        });
+        document.getElementById('tr-button').addEventListener('click', () => {
+          currentPage = 'tr';
+          selectedTopic = null;
+          render();
+        });
+      }
+
+      // Function to render the HR questions page
+      function renderHRPage() {
+        appElement.innerHTML = `
+          <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center mb-6">
+              <button id="back-to-home" class="flex items-center text-white/80 hover:text-white transition-colors duration-200">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="text-lg">Back</span>
+              </button>
+              <h1 class="text-3xl font-bold text-center text-white drop-shadow-lg flex-grow">HR Interview Questions</h1>
+              <div class="w-16"></div>
+            </div>
+            <p class="text-center text-white/70 mb-8">
+              Click on a question to reveal the answer tailored to your resume.
+            </p>
+            <div class="flex-grow overflow-y-auto custom-scrollbar p-2">
+              <ul class="space-y-4" id="hr-questions-list">
+                ${hrQuestions.map(item => `
+                  <li data-id="${item.id}" class="bg-white/5 backdrop-blur-sm rounded-lg shadow-lg p-4 transition-all duration-200 hover:bg-white/10 cursor-pointer">
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-white mb-2">Q: ${item.question}</h4>
+                        <p class="text-sm text-white/80 mt-2 hidden" id="answer-${item.id}">
+                          <span class="font-bold text-white">A:</span> ${item.answer}
+                        </p>
+                      </div>
+                      <svg id="arrow-${item.id}" class="w-5 h-5 text-white/80 transform transition-transform duration-300 ml-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </div>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('back-to-home').addEventListener('click', () => {
+          currentPage = 'home';
+          render();
+        });
+
+        document.getElementById('hr-questions-list').addEventListener('click', (event) => {
+          const listItem = event.target.closest('li');
+          if (listItem) {
+            const questionId = listItem.getAttribute('data-id');
+            const answerElement = document.getElementById(`answer-${questionId}`);
+            const arrowElement = document.getElementById(`arrow-${questionId}`);
+            if (expandedQuestion === questionId) {
+              answerElement.classList.add('hidden');
+              arrowElement.classList.remove('rotate-180');
+              expandedQuestion = null;
+            } else {
+              // Hide the previously expanded answer
+              if (expandedQuestion) {
+                document.getElementById(`answer-${expandedQuestion}`).classList.add('hidden');
+                document.getElementById(`arrow-${expandedQuestion}`).classList.remove('rotate-180');
+              }
+              // Show the new answer
+              answerElement.classList.remove('hidden');
+              arrowElement.classList.add('rotate-180');
+              expandedQuestion = questionId;
+            }
+          }
+        });
+      }
+
+      // Function to render the list of technical topics
+      function renderTRTopicList() {
+        appElement.innerHTML = `
+          <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center mb-6">
+              <button id="back-to-home" class="flex items-center text-white/80 hover:text-white transition-colors duration-200">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="text-lg">Back</span>
+              </button>
+              <h1 class="text-3xl font-bold text-center text-white drop-shadow-lg flex-grow">Technical Topics</h1>
+              <div class="w-16"></div>
+            </div>
+            <p class="text-center text-white/70 mb-8">
+              Select a technical domain to see common interview questions.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 flex-grow overflow-y-auto custom-scrollbar p-2" id="tr-topics-list">
+              ${trCategories.map(category => `
+                <button data-id="${category.id}" class="w-full p-6 bg-white/10 backdrop-blur-md rounded-xl shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 h-32 flex items-center justify-center">
+                  <h2 class="text-2xl font-semibold text-white text-center">${category.title}</h2>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+
+        document.getElementById('back-to-home').addEventListener('click', () => {
+          currentPage = 'home';
+          render();
+        });
+
+        document.getElementById('tr-topics-list').addEventListener('click', (event) => {
+          const button = event.target.closest('button');
+          if (button) {
+            const topicId = button.getAttribute('data-id');
+            selectedTopic = trCategories.find(cat => cat.id === topicId);
+            expandedQuestion = null;
+            render();
+          }
+        });
+      }
+
+      // Function to render the technical questions for a specific topic
+      function renderTRQuestionsPage() {
+        appElement.innerHTML = `
+          <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center mb-6">
+              <button id="back-to-tr-list" class="flex items-center text-white/80 hover:text-white transition-colors duration-200">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                <span class="text-lg">Back</span>
+              </button>
+              <h1 class="text-3xl font-bold text-center text-white drop-shadow-lg flex-grow">${selectedTopic.title}</h1>
+              <div class="w-16"></div>
+            </div>
+            <p class="text-center text-white/70 mb-8">
+              This section includes sample questions and answers for the <strong>${selectedTopic.title}</strong> domain.
+            </p>
+            <div class="flex-grow overflow-y-auto custom-scrollbar p-2">
+              <ul class="space-y-4" id="tr-questions-list">
+                ${selectedTopic.questions.map(item => `
+                  <li data-id="${item.id}" class="bg-white/5 backdrop-blur-sm rounded-lg shadow-lg p-4 transition-all duration-200 hover:bg-white/10 cursor-pointer">
+                    <div class="flex justify-between items-start">
+                      <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-white mb-2">Q: ${item.question}</h4>
+                        <p class="text-sm text-white/80 mt-2 hidden" id="answer-${item.id}">
+                          <span class="font-bold text-white">A:</span> ${item.answer}
+                        </p>
+                      </div>
+                      <svg id="arrow-${item.id}" class="w-5 h-5 text-white/80 transform transition-transform duration-300 ml-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </div>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('back-to-tr-list').addEventListener('click', () => {
+          currentPage = 'tr';
+          selectedTopic = null;
+          render();
+        });
+
+        document.getElementById('tr-questions-list').addEventListener('click', (event) => {
+          const listItem = event.target.closest('li');
+          if (listItem) {
+            const questionId = listItem.getAttribute('data-id');
+            const answerElement = document.getElementById(`answer-${questionId}`);
+            const arrowElement = document.getElementById(`arrow-${questionId}`);
+            if (expandedQuestion === questionId) {
+              answerElement.classList.add('hidden');
+              arrowElement.classList.remove('rotate-180');
+              expandedQuestion = null;
+            } else {
+              // Hide the previously expanded answer
+              if (expandedQuestion) {
+                document.getElementById(`answer-${expandedQuestion}`).classList.add('hidden');
+                document.getElementById(`arrow-${expandedQuestion}`).classList.remove('rotate-180');
+              }
+              // Show the new answer
+              answerElement.classList.remove('hidden');
+              arrowElement.classList.add('rotate-180');
+              expandedQuestion = questionId;
+            }
+          }
+        });
+      }
+
+      // Main render function to decide which page to show
+      function render() {
+        switch (currentPage) {
+          case 'home':
+            renderHomePage();
+            break;
+          case 'hr':
+            renderHRPage();
+            break;
+          case 'tr':
+            if (selectedTopic) {
+              renderTRQuestionsPage();
+            } else {
+              renderTRTopicList();
+            }
+            break;
+          default:
+            renderHomePage();
+        }
+      }
+
+      // Initial render on page load
+      render();
+    });
+  </script>
+
+</body>
+</html>
