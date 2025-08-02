@@ -1,0 +1,16 @@
+.glassmorphism {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.skill-item {
+    position: absolute;
+    transition: transform 0.2s ease-in-out;
+}
+
+.skill-item:hover {
+    transform: scale(1.1);
+}
